@@ -16,13 +16,13 @@ class Subreddit(name: String) {
       ujson.read(_)("data")("children").arr map { child => child("data")("title").str }
     } map {
       _ map{
-        postTitle => postTitle.substring(0, postTitle.indexOf('[')).trim
+        postTitle => postTitle.substring(0, postTitle.indexOf('['))
       } map {
         _.split("[-|—|\\--]")
       } filter {
         _.length == 2
       } map {
-        case Array(f1, f2) => (f1, f2)
+        case Array(f1, f2) => (f1.trim, f2.trim)
       }
     } map { _.toSeq }
 }
