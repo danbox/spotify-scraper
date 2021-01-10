@@ -5,14 +5,18 @@ import sttp.model.Uri
 
 class Subreddit(name: String) {
 
-  private def uri(): Uri = uri"https://www.reddit.com/r/$name/hot/.json"
-
-  def getTitles: Either[String, Seq[(String, String)]] = basicRequest
+  /**
+   * Returns a sequence of tracks - split by artist/track name
+   * Current regex follows format used by /r/listentothis
+   * and may need to be tweaked to work with other subreddits
+   *
+   * @return Either containing a sequence of (artist, track name)
+   */
+  def getTracks: Either[String, Seq[(String, String)]] = basicRequest
     .get(uri())
     .header("User-Agent", "spotify-scraper 0.1")
     .send(HttpURLConnectionBackend())
-    .body
-    .map {
+    .body map {
       ujson.read(_)("data")("children").arr map { child => child("data")("title").str }
     } map {
       _ map{
@@ -25,4 +29,6 @@ class Subreddit(name: String) {
         case Array(f1, f2) => (f1.trim, f2.trim)
       }
     } map { _.toSeq }
+
+  private def uri(): Uri = uri"https://www.reddit.com/r/$name/hot/.json"
 }
